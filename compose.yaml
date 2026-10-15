@@ -1,0 +1,17 @@
+services:
+  artcraft:
+    build: .
+    container_name: artcraft
+    restart: unless-stopped
+    ports:
+      - "${ARTCRAFT_PORT:-31000}:8080"
+    environment:
+      TZ: Europe/Berlin
+      CHECK_INTERVAL_HOURS: "12"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+    volumes:
+      - ./public:/public:ro
+      - ./data:/data
+    security_opt:
+      - no-new-privileges:true

@@ -1,0 +1,10 @@
+.env
+.DS_Store
+__pycache__/
+*.pyc
+public/*
+!public/.gitkeep
+data/*
+!data/.gitkeep
+.artcraft-backup.*/
+.artcraft-setup.*/

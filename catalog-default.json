@@ -1,0 +1,174 @@
+{
+  "apps": [
+    {
+      "id": "photocraft",
+      "description": "PhotoCraft: An open-source, photo editor written by scratch in pure Rust",
+      "github": "https://github.com/storytold/photocraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.9.0",
+        "url": "https://github.com/storytold/photocraft/releases/download/v0.9.0/photocraft-web-0.9.0.zip",
+        "digest": "sha256:b3fa5ab6a9d32bc5ff7dfdde31939a2337471a196a2e70f1ff961a61b1bb02e6",
+        "size": 11467035,
+        "page": "https://github.com/storytold/photocraft/releases/tag/v0.9.0"
+      }
+    },
+    {
+      "id": "pdfcraft",
+      "description": "PdfCraft: An open-source PDF reader and editor written by scratch in pure Rust",
+      "github": "https://github.com/storytold/pdfcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.8.0",
+        "url": "https://github.com/storytold/pdfcraft/releases/download/v0.8.0/pdfcraft-web-0.8.0.zip",
+        "digest": "sha256:1f9ea51f3c1f71cc719c12814e10f236912fa41ef54a7782c7dd4a619d9eee9a",
+        "size": 14113243,
+        "page": "https://github.com/storytold/pdfcraft/releases/tag/v0.8.0"
+      }
+    },
+    {
+      "id": "filmcraft",
+      "description": "FilmCraft: An open-source, nonlinear video editor written by scratch in pure Rust",
+      "github": "https://github.com/storytold/filmcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.8.0",
+        "url": "https://github.com/storytold/filmcraft/releases/download/v0.8.0/filmcraft-web-0.8.0.zip",
+        "digest": "sha256:6b13956fc741522427663517b1e483d6e0777891063fed02b1bd94bfada8a6c7",
+        "size": 13326588,
+        "page": "https://github.com/storytold/filmcraft/releases/tag/v0.8.0"
+      }
+    },
+    {
+      "id": "vectorcraft",
+      "description": "VectorCraft: An open-source, vector art tool written by scratch in pure Rust",
+      "github": "https://github.com/storytold/vectorcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.11.0",
+        "url": "https://github.com/storytold/vectorcraft/releases/download/v0.11.0/vectorcraft-web-0.11.0.zip",
+        "digest": "sha256:b14014b9f65d5649bd52298b2c34954ddaa2fddf4f6b81e0b4289c31f4e31265",
+        "size": 24687078,
+        "page": "https://github.com/storytold/vectorcraft/releases/tag/v0.11.0"
+      }
+    },
+    {
+      "id": "lightcraft",
+      "description": "LightCraft: An open-source non-destructive photo editor written by scratch in pure Rust",
+      "github": "https://github.com/storytold/lightcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.8.0",
+        "url": "https://github.com/storytold/lightcraft/releases/download/v0.8.0/lightcraft-web-0.8.0.zip",
+        "digest": "sha256:bfabb7edecfc8723b9d698ad2b6fa32e99fcdf977628a68b2884c4b06c6f017a",
+        "size": 66660218,
+        "page": "https://github.com/storytold/lightcraft/releases/tag/v0.8.0"
+      }
+    },
+    {
+      "id": "designcraft",
+      "description": "DesignCraft: An open-source page and layout design editor written by scratch in pure Rust",
+      "github": "https://github.com/storytold/designcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.8.0",
+        "url": "https://github.com/storytold/designcraft/releases/download/v0.8.0/designcraft-web-0.8.0.zip",
+        "digest": "sha256:f1ebe741d89949ba1d5069a50401f14b297b9a66d9d6cd2d8a88cd83e4c77888",
+        "size": 15306498,
+        "page": "https://github.com/storytold/designcraft/releases/tag/v0.8.0"
+      }
+    },
+    {
+      "id": "effectcraft",
+      "description": "EffectCraft: An open-source motion graphics and compositing tool written by scratch in pure Rust",
+      "github": "https://github.com/storytold/effectcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.10.0",
+        "url": "https://github.com/storytold/effectcraft/releases/download/v0.10.0/effectcraft-web-0.10.0.zip",
+        "digest": "sha256:b922abeda2420391a7fd887f53ebae6948730e63720bad6a6eb3dc48dc1b46a8",
+        "size": 19031497,
+        "page": "https://github.com/storytold/effectcraft/releases/tag/v0.10.0"
+      }
+    },
+    {
+      "id": "gridcraft",
+      "description": "GridCraft: an open-source, clean-room spreadsheet (Microsoft Excel-style) in pure Rust. By ArtCraft.",
+      "github": "https://github.com/storytold/gridcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.7.0",
+        "url": "https://github.com/storytold/gridcraft/releases/download/v0.7.0/gridcraft-web-0.7.0.zip",
+        "digest": "sha256:ad10af2baf9c7ed4ccbd81e32b37698f5075cdf4f26b726fee7fc7938a3a8d27",
+        "size": 7113559,
+        "page": "https://github.com/storytold/gridcraft/releases/tag/v0.7.0"
+      }
+    },
+    {
+      "id": "cadcraft",
+      "description": "CADCraft: computer-aided design and drafting — an open-source, clean-room AutoCAD-style app in pure Rust",
+      "github": "https://github.com/storytold/cadcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.7.0",
+        "url": "https://github.com/storytold/cadcraft/releases/download/v0.7.0/cadcraft-web-0.7.0.zip",
+        "digest": "sha256:47df17081e31bc25ab586ba88156dc25e07962364c73513004b9c6113b575be7",
+        "size": 8492921,
+        "page": "https://github.com/storytold/cadcraft/releases/tag/v0.7.0"
+      }
+    },
+    {
+      "id": "deckcraft",
+      "description": "Presentations and slide shows: an open-source, clean-room reimplementation of Microsoft PowerPoint in pure Rust. Part of the ArtCraft Crafting Apps.",
+      "github": "https://github.com/storytold/deckcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.7.0",
+        "url": "https://github.com/storytold/deckcraft/releases/download/v0.7.0/deckcraft-web-0.7.0.zip",
+        "digest": "sha256:4ab91994048c096fa356b7246c31098474d978ecd572e5b252dd825a287d1c40",
+        "size": 9385879,
+        "page": "https://github.com/storytold/deckcraft/releases/tag/v0.7.0"
+      }
+    },
+    {
+      "id": "soundcraft",
+      "description": "An open-source, clean-room reimplementation of Avid Pro Tools in pure Rust",
+      "github": "https://github.com/storytold/soundcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.7.0",
+        "url": "https://github.com/storytold/soundcraft/releases/download/v0.7.0/soundcraft-web-0.7.0.zip",
+        "digest": "sha256:b735de61fbdc21716977ace2649709bd307de832eda2d848f94d1868acef7c45",
+        "size": 5939077,
+        "page": "https://github.com/storytold/soundcraft/releases/tag/v0.7.0"
+      }
+    },
+    {
+      "id": "wordcraft",
+      "description": "An open-source, clean-room reimplementation of Microsoft Word in pure Rust",
+      "github": "https://github.com/storytold/wordcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.7.0",
+        "url": "https://github.com/storytold/wordcraft/releases/download/v0.7.0/wordcraft-web-0.7.0.zip",
+        "digest": "sha256:98df7c68a0ac788a9ac0f531fd34c31ab7d89965abb4935f57168d287dab3189",
+        "size": 15009187,
+        "page": "https://github.com/storytold/wordcraft/releases/tag/v0.7.0"
+      }
+    },
+    {
+      "id": "figcraft",
+      "description": "FigCraft: interface design and prototyping; an open-source, clean-room reimplementation of collaborative design workflows in pure Rust",
+      "github": "https://github.com/storytold/figcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.6.0",
+        "url": "https://github.com/storytold/figcraft/releases/download/v0.6.0/figcraft-web-0.6.0.zip",
+        "digest": "sha256:a414970e3857f6613efd7f90bd4c8394e5d51b31c4cf1fa0352f87820695b9c4",
+        "size": 8892594,
+        "page": "https://github.com/storytold/figcraft/releases/tag/v0.6.0"
+      }
+    }
+  ],
+  "generated": 1792045533.749343
+}
