@@ -6,6 +6,17 @@ Für **Synology NAS mit Container Manager** und **Linux-Server mit Docker Compos
 
 > Dieses Projekt ist kein offizielles Artcraft-Produkt und wird nicht von storytold betrieben. Die jeweiligen Anwendungen, Namen und Icons gehören ihren jeweiligen Rechteinhabern.
 
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="1.png"><img src="1.png" alt="Artcraft Hub mit installierten Anwendungen und grünen Startbuttons" width="100%"></a>
+    </td>
+    <td width="50%" valign="top">
+      <a href="2.png"><img src="2.png" alt="Verfügbare Craft-Anwendungen mit blauen Installationsbuttons" width="100%"></a>
+    </td>
+  </tr>
+</table>
+
 ## Funktionen
 
 - **Installiert:** Anwendungen mit grünem Startbutton und Dropdown für Update, vorherige Version und Deinstallation.
