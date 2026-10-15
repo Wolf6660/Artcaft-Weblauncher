@@ -65,7 +65,7 @@ def api_pause():
 
 def request(url):
     parsed = urllib.parse.urlsplit(url)
-    if parsed.scheme != 'https' or parsed.hostname not in {'api.github.com', 'github.com', 'raw.githubusercontent.com'}:
+    if parsed.scheme != 'https' or parsed.hostname not in {'api.github.com', 'github.com', 'raw.githubusercontent.com', 'img.shields.io', 'user-images.githubusercontent.com', 'private-user-images.githubusercontent.com'}:
         raise ValueError('Unzulässige Download-Adresse')
     if parsed.hostname == 'api.github.com':
         api_pause()
@@ -203,6 +203,41 @@ def load_icon(name):
             raise RuntimeError('Icon konnte nicht von GitHub geladen werden. NAS-Zugriff auf raw.githubusercontent.com prüfen.') from error
 
 
+def load_readme_image(url):
+    parsed = urllib.parse.urlsplit(url)
+    allowed = {'raw.githubusercontent.com', 'img.shields.io', 'user-images.githubusercontent.com', 'private-user-images.githubusercontent.com'}
+    if (parsed.scheme != 'https' or parsed.hostname not in allowed or parsed.username
+            or parsed.password or parsed.port not in (None, 443)):
+        raise ValueError('Nicht unterstützte Bildadresse')
+    folder = DATA / 'readme-images'
+    folder.mkdir(parents=True, exist_ok=True)
+    key = hashlib.sha256(url.encode()).hexdigest()
+    content_file, meta_file = folder / (key + '.bin'), folder / (key + '.json')
+    def cached():
+        return content_file.read_bytes(), json.loads(meta_file.read_text())['type']
+    if content_file.exists() and meta_file.exists() and time.time() - meta_file.stat().st_mtime < 86400:
+        return cached()
+    try:
+        with request(url) as response:
+            content = response.read(8 * 1024 * 1024 + 1)
+            mime = response.headers.get_content_type()
+        if len(content) > 8 * 1024 * 1024 or mime not in {'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'}:
+            raise ValueError('Nicht unterstütztes Bildformat oder Bild zu groß')
+        with tempfile.NamedTemporaryFile(dir=folder, delete=False) as tmp:
+            tmp.write(content)
+            temporary = Path(tmp.name)
+        try:
+            temporary.replace(content_file)
+        finally:
+            temporary.unlink(missing_ok=True)
+        atomic_json(meta_file, {'type': mime})
+        return content, mime
+    except Exception:
+        if content_file.exists() and meta_file.exists():
+            return cached()
+        raise
+
+
 def check():
     api_pause()
     if STATUS.get('checked') and time.time() - STATUS['checked'] < 600:
@@ -267,9 +302,11 @@ def app_details(name):
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache = cache_dir / (name + '.json')
     previous = json.loads(cache.read_text()) if cache.exists() else None
+    context = {'branch': app.get('icon_branch') or 'main'}
     if previous and time.time() - previous['fetched'] < 3600:
-        return previous
+        return {**previous, **context}
     try:
+        readme_path = 'README.md'
         branch = urllib.parse.quote(app.get('icon_branch') or 'main', safe='')
         url = f'https://raw.githubusercontent.com/storytold/{name}/{branch}/README.md'
         try:
@@ -286,14 +323,15 @@ def app_details(name):
             if readme.get('encoding') != 'base64':
                 raise ValueError('Unbekanntes README-Format')
             content = base64.b64decode(readme['content']).decode('utf-8', errors='replace')
+            readme_path = readme.get('path') or 'README.md'
         result = {'id': name, 'description': app.get('description') or '',
-                  'readme': content, 'github': f'https://github.com/storytold/{name}',
+                  'readme': content, 'readme_path': readme_path, **context, 'github': f'https://github.com/storytold/{name}',
                   'fetched': time.time(), 'cached': False}
         atomic_json(cache, result)
         return result
     except Exception as error:
         if previous:
-            return {**previous, 'cached': True}
+            return {**previous, **context, 'cached': True}
         raise RuntimeError('Beschreibung konnte nicht geladen werden. '
                            'Der Container benötigt Zugriff auf raw.githubusercontent.com. '
                            + str(error)) from error
@@ -430,6 +468,21 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if not self.authenticated():
             return
+        if urllib.parse.urlsplit(self.path).path == '/api/readme-image':
+            url = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query).get('url', [''])[0]
+            try:
+                content, mime = load_readme_image(url)
+                self.send_response(200)
+                self.send_header('Content-Type', mime)
+                self.send_header('Content-Length', str(len(content)))
+                self.send_header('Content-Security-Policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'")
+                self.end_headers()
+                self.wfile.write(content)
+            except ValueError as error:
+                self.respond(400, {'error': str(error)})
+            except Exception:
+                self.respond(502, {'error': 'README-Bild konnte nicht geladen werden'})
+            return
         if urllib.parse.urlsplit(self.path).path.startswith('/api/icon/'):
             name = urllib.parse.unquote(urllib.parse.urlsplit(self.path).path.removeprefix('/api/icon/'))
             try:
@@ -489,6 +542,8 @@ class Handler(SimpleHTTPRequestHandler):
             return str(DASHBOARD / 'details.html')
         if not parts:
             return str(DASHBOARD / 'index.html')
+        if len(parts) == 2 and parts[0] == 'vendor' and parts[1] in {'marked.js', 'purify.min.js'}:
+            return str(DASHBOARD / 'vendor' / parts[1])
         if parts[0] in {'hub.js', 'hub.css', 'details.js'} and len(parts) == 1:
             return str(DASHBOARD / parts[0])
         name = parts[0]
