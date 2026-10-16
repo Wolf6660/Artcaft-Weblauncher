@@ -1,4 +1,5 @@
 FROM python:3.13-alpine
+LABEL org.opencontainers.image.source="https://github.com/Wolf6660/Artcaft-Weblauncher"
 WORKDIR /app
 COPY server.py catalog-default.json VERSION /app/
 COPY dashboard /app/dashboard

@@ -1,6 +1,7 @@
 services:
   artcraft:
-    build: .
+    image: ghcr.io/wolf6660/artcaft-weblauncher:latest
+    pull_policy: always
     container_name: artcraft
     restart: unless-stopped
     ports:

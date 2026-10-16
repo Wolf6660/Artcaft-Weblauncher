@@ -1,0 +1,125 @@
+name: Build and publish container
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - VERSION
+      - server.py
+      - catalog-default.json
+      - dashboard/**
+      - .dockerignore
+      - .github/workflows/container.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: container-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Validate source and image tags
+        id: image
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import ast, json
+          from pathlib import Path
+          ast.parse(Path('server.py').read_text())
+          assert json.loads(Path('catalog-default.json').read_text())['apps']
+          PY
+          node --check dashboard/hub.js
+          node --check dashboard/details.js
+          VERSION=$(tr -d '\r\n' < VERSION)
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "name=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "revision=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Set up emulation
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Authenticate to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish AMD64 and ARM64 images
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ steps.image.outputs.name }}:latest
+            ${{ steps.image.outputs.name }}:${{ steps.image.outputs.version }}
+            ${{ steps.image.outputs.name }}:sha-${{ steps.image.outputs.revision }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.image.outputs.version }}
+            org.opencontainers.image.revision=${{ steps.image.outputs.revision }}
+            org.opencontainers.image.description=Artcraft Weblauncher for Synology and Linux
+          annotations: |
+            index:org.opencontainers.image.description=Artcraft Weblauncher for Synology and Linux
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify published image platforms
+        shell: bash
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          VERSION: ${{ steps.image.outputs.version }}
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect "$IMAGE:$VERSION" --raw > /tmp/image-index.json
+          python3 - <<'PY'
+          import json
+          index = json.load(open('/tmp/image-index.json'))
+          platforms = {(m.get('platform', {}).get('os'), m.get('platform', {}).get('architecture')) for m in index['manifests']}
+          assert {('linux', 'amd64'), ('linux', 'arm64')} <= platforms, platforms
+          PY
+
+      - name: Smoke-test the AMD64 container
+        shell: bash
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          VERSION: ${{ steps.image.outputs.version }}
+        run: |
+          set -euo pipefail
+          docker run -d --name artcraft-smoke -p 127.0.0.1:18080:8080 "$IMAGE:$VERSION"
+          trap 'docker logs artcraft-smoke; docker rm -f artcraft-smoke' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18080/api/status -o /tmp/hub-status.json; then
+              break
+            fi
+            sleep 2
+          done
+          python3 - <<'PY'
+          import json, os
+          status = json.load(open('/tmp/hub-status.json'))
+          assert status['version'] == os.environ['VERSION'], status.get('version')
+          assert status['apps'], 'Missing application catalog'
+          PY
+          curl -fsS http://127.0.0.1:18080/ | grep -q 'repo-links'

@@ -1,6 +1,6 @@
 # Artcraft Hub für Docker
 
-**Aktuelle Version: [0.2](https://github.com/Wolf6660/Artcaft-Weblauncher/tree/v0.2)**
+**Aktuelle Version: [0.3](https://github.com/Wolf6660/Artcaft-Weblauncher/tree/v0.3)**
 
 Ein unabhängiger, selbst gehosteter Launcher für die [Craft-Webanwendungen von storytold](https://github.com/orgs/storytold/repositories?type=all). Anwendungen direkt im Browser starten, weitere Werkzeuge installieren und verfügbare Web-Releases bei Bedarf aktualisieren.
 
@@ -27,6 +27,7 @@ Für **Synology NAS mit Container Manager** und **Linux-Server mit Docker Compos
 - Oben rechts Links zum Weblauncher und zu den Repositories der Softwarehersteller.
 - Aktuelle Hub-Version unten rechts; Versionsstand in der Datei `VERSION`.
 - Originalicons werden vom Server geladen und unter `data/icons` zwischengespeichert.
+- Fertiges Container-Image aus GHCR für Intel/AMD64 und ARM64; keine lokalen Programmdateien für die Installation erforderlich.
 - Automatische Prüfung auf neue Releases alle zwölf Stunden; Installationen und Updates ausschließlich auf Klick.
 - Vorherige verwaltete Version bleibt für einen Rollback erhalten.
 - Bestehende manuelle Anwendungen in `public` bleiben nutzbar.
@@ -36,43 +37,54 @@ Für **Synology NAS mit Container Manager** und **Linux-Server mit Docker Compos
 
 - Docker Engine mit Docker Compose V2, auf Synology entsprechend Container Manager.
 - Freier Hostport, standardmäßig **31000**.
-- Ausgehender Internetzugriff auf Docker Hub beim Bauen sowie GitHub, `raw.githubusercontent.com` und GitHubs Download-CDNs für Katalog, Downloads und Beschreibungen.
+- Ausgehender Internetzugriff auf `ghcr.io` und GitHubs Download-CDNs zum Laden des Images sowie GitHub, `raw.githubusercontent.com` und GitHubs Download-CDNs für Katalog, Downloads und Beschreibungen.
 - Schreibrechte für den Datenordner `data`.
 
-Das Image wird aus `python:3.13-alpine` für die Architektur des Docker-Hosts gebaut. Die Craft-Anwendungen werden als fertige Web-/WebAssembly-Pakete installiert; ein Rust-Build ist nicht nötig.
+GitHub Actions baut das Image aus `python:3.13-alpine` für `linux/amd64` und `linux/arm64` und veröffentlicht es als `ghcr.io/wolf6660/artcaft-weblauncher`. Docker wählt automatisch die passende Architektur. Die Craft-Anwendungen werden als fertige Web-/WebAssembly-Pakete installiert; ein Rust-Build ist nicht nötig.
 
-## Installation unter Linux
+## Installation mit fertigem Image
 
-Das Repository klonen und die Docker-Anwendung starten:
+Benötigt werden nur `compose.yaml` und optional eine `.env` im Projektverzeichnis. Kein Git-Klon, Dockerfile oder Kopieren der Programmdateien ist für den Betrieb nötig. Die Ordner `public` und `data` enthalten persistente Anwendungen und Daten.
 
-```sh
-git clone https://github.com/Wolf6660/Artcaft-Weblauncher.git
-cd Artcaft-Weblauncher
-mkdir -p public data
-cp .env.example .env
-# Optional: .env bearbeiten
-docker compose up -d --build
+Die Compose-Datei verwendet:
+
+```yaml
+image: ghcr.io/wolf6660/artcaft-weblauncher:latest
+pull_policy: always
 ```
 
-Anschließend im Browser `http://SERVER-IP:31000` öffnen.
+Damit prüft Docker beim Erstellen beziehungsweise `compose up` auf ein neues Image. Ein bloßer Neustart eines bestehenden Containers aktualisiert ihn nicht.
 
-Die Volume-Pfade `./public` und `./data` beziehen sich auf das Projektverzeichnis. Es sind keine festen Synology-Pfade nötig.
+### Linux
 
-## Installation auf Synology
+`compose.yaml` aus diesem Repository in ein eigenes Verzeichnis kopieren, darin ausführen:
 
-1. Die Projektdateien beispielsweise unter `/volume1/docker/artcraft` ablegen. `Dockerfile`, `compose.yaml`, `server.py`, `catalog-default.json`, `VERSION` und der komplette Ordner `dashboard` müssen vorhanden sein.
-2. Die Ordner `public` und `data` anlegen, falls sie fehlen. Bestehende Anwendungsordner und Daten behalten.
-3. `.env.example` als `.env` kopieren und bei Bedarf bearbeiten.
-4. Einen bisherigen Container mit gleichem Namen oder Port vor der Umstellung stoppen und entfernen. Die Datenordner behalten.
-5. In **Container Manager → Projekt → Erstellen** das Projektverzeichnis und die vorhandene `compose.yaml` auswählen, anschließend bauen und starten.
+```sh
+mkdir -p public data
+# Optional: .env.example als .env ablegen und bearbeiten
+docker compose pull
+docker compose up -d
+```
+
+Anschließend `http://SERVER-IP:31000` öffnen. Die Pfade `./public` und `./data` beziehen sich auf das Projektverzeichnis und funktionieren unabhängig vom NAS-Volume.
+
+### Synology Container Manager
+
+1. Ein Projektverzeichnis anlegen, beispielsweise `/volume1/docker/artcraft`. Vorhandene Ordner `public`, `data` und die persönliche `.env` behalten.
+2. **Einmalig die neue `compose.yaml` übernehmen.** Sie enthält jetzt `image:` statt `build:`. Die alte YAML würde weiterhin lokale Dateien verwenden.
+3. `public` und `data` anlegen, falls sie fehlen. Optional `.env.example` als `.env` ablegen und anpassen.
+4. Im Container Manager das bisherige Projekt beenden und die Container entfernen, **keine Datenordner löschen**. Bei einem neuen Projekt darf kein anderer Container denselben Namen oder Port verwenden.
+5. Das Projekt mit der neuen YAML erstellen. Container Manager lädt das Image aus GHCR. Wegen `pull_policy: always` wird beim erneuten Erstellen wieder auf das aktuelle Image geprüft.
 6. `http://NAS-IP:31000` öffnen.
 
-Alternativ per SSH:
+Per SSH alternativ im Projektverzeichnis:
 
 ```sh
-cd /volume1/docker/artcraft
-sudo docker compose up -d --build
+sudo docker compose pull
+sudo docker compose up -d --force-recreate
 ```
+
+Die alten Dateien `server.py`, `Dockerfile`, `VERSION`, `catalog-default.json` und `dashboard` werden bei dieser Installation nicht mehr vom NAS eingebunden. Die Programmdateien kommen vollständig aus dem Image.
 
 ## Einstellungen in `.env`
 
@@ -149,13 +161,8 @@ GITHUB_TOKEN=
 
 ```text
 .
-├── Dockerfile
 ├── compose.yaml
-├── server.py
-├── catalog-default.json
-├── VERSION
-├── .env.example
-├── dashboard/
+├── .env                    # Optional, nicht veröffentlichen
 ├── public/                 # Manuell vorhandene Webanwendungen
 │   └── pdfcraft/
 │       └── index.html
@@ -172,14 +179,16 @@ Die Ordner enthalten `.gitkeep`, damit Git auch die zunächst leeren Ordner mitf
 
 **Craft-Anwendungen:** im Hub nach Updates suchen und die gewünschte Anwendung aktualisieren. Vorher offene Dokumente speichern, anschließend bestehende Anwendungstabs neu laden. Ein Rollback ist ab der zweiten erfolgreichen verwalteten Installation möglich.
 
-**Den Hub selbst:** neue Projektdateien aus diesem Repository übernehmen und das Image neu bauen:
+**Den Hub selbst:** das aktuelle veröffentlichte Image herunterladen und den Container neu erstellen:
 
 ```sh
-git pull
-docker compose up -d --build
+docker compose pull
+docker compose up -d --force-recreate
 ```
 
-Das gilt nur für eine per Git geklonte Installation. Bei manuell kopierten Dateien diese zunächst ersetzen. Die Updatebuttons im Hub aktualisieren die Craft-Anwendungen, nicht das Docker-Image des Hubs.
+In Synology entspricht dies dem erneuten Erstellen des Projekts mit der neuen YAML und aktuellem Image. Weder `git pull` noch ein lokaler Build sind erforderlich. `public`, `data` und `.env` bleiben erhalten. Ein bereits laufender Container aktualisiert sich nicht von selbst; der Updatezeitpunkt bleibt unter deiner Kontrolle. Die Updatebuttons im Hub aktualisieren die Craft-Anwendungen, nicht das Hub-Image.
+
+Zum Festhalten einer bestimmten Version in der YAML statt `:latest` beispielsweise `:0.3` verwenden. Für ein Update auf eine andere festgelegte Version den Tag in der YAML ändern. Die laufende Version steht unten rechts oder lässt sich mit `docker exec artcraft cat /app/VERSION` prüfen.
 
 Für Backups den Container stoppen und `public`, `data` und `.env` sichern. Der Hub ist kein Dokumentenserver: Dokumente und Einstellungen innerhalb einer Craft-Anwendung werden von deren eigenen Browserfunktionen verwaltet.
 
@@ -189,4 +198,18 @@ Die automatische Erkennung unterstützt Repositories mit `craft` am Namensende u
 
 README-Inhalte werden mit GitHub-kompatibler Markdown-Darstellung und gefiltertem HTML angezeigt, einschließlich Bildern, Badges, Tabellen und Bildgalerien. Relative Bild- und Linkpfade werden zum jeweiligen Repository aufgelöst. Skripte, Ereignishandler, eingebettete Frames und aktive HTML-Inhalte werden entfernt. Bilder von GitHub-Raw-Hosting und Shields.io werden über den Hub zwischengespeichert und lokal ausgeliefert; SVG-Bilder erhalten eine restriktive Content-Security-Policy. Andere Bildhosts werden derzeit nicht unterstützt. Die lokal mitgelieferten Bibliotheken [Marked](https://marked.js.org/) und [DOMPurify](https://github.com/cure53/DOMPurify) sowie ihre Lizenzen liegen unter `dashboard/vendor`; ein Browser-CDN wird nicht benötigt. Ein Container-Docker-Socket ist nicht erforderlich.
 
-Die lokale Oberfläche einschließlich Originalicons sowie Katalog, Cache und Offline-Fallback wurden in der Entwicklungsumgebung geprüft. Ein tatsächlicher Docker-Build und Betrieb auf Synology bzw. einem Linux-Server konnte dort mangels Docker nicht geprüft werden.
+Die lokale Oberfläche einschließlich Originalicons sowie Katalog, Cache und Offline-Fallback wurden in der Entwicklungsumgebung geprüft. Der GitHub-Workflow baut die beiden Plattformen, kontrolliert das veröffentlichte Image-Manifest und führt einen HTTP-Smoke-Test für AMD64 aus. Der Betrieb auf einem konkreten Synology-NAS muss dort geprüft werden.
+
+## Container-Veröffentlichung für Maintainer
+
+Der Workflow `.github/workflows/container.yml` startet bei Programmänderungen auf `main` oder manuell unter GitHub → Actions → Build and publish container. Er nutzt den automatisch bereitgestellten Actions-Token mit `packages: write`; ein persönlicher Token muss für den Build nicht als Repository-Geheimnis hinterlegt werden. Der optionale `GITHUB_TOKEN` in der NAS-`.env` ist davon unabhängig und dient den Abfragen nach Craft-Releases.
+
+Images erhalten die Tags `latest`, die Versionsnummer aus `VERSION` und `sha-<commit>`. Vor einer neuen Version `VERSION`, die sichtbare Versionsangabe in den HTML-Dateien und den Versionshinweis dieser README gemeinsam aktualisieren.
+
+**Einmalig nach der ersten Veröffentlichung:** GitHub erstellt neue Container-Pakete standardmäßig privat. Unter [Paket-Einstellungen](https://github.com/users/Wolf6660/packages/container/artcaft-weblauncher/settings) die Sichtbarkeit auf **Public** setzen. Erst dann können Synology und andere Nutzer das Image ohne Registry-Anmeldung herunterladen. Der öffentliche Quellcode allein macht das Paket nicht automatisch öffentlich.
+
+Für lokale Entwicklungsbuilds bleibt das Dockerfile erhalten:
+
+```sh
+docker build -t artcraft-hub:dev .
+```
