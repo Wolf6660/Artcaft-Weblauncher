@@ -53,6 +53,8 @@ image: ghcr.io/wolf6660/artcaft-weblauncher:latest
 pull_policy: always
 ```
 
+Das Image dieses Projekts ist öffentlich und wurde ohne Registry-Anmeldung für AMD64 und ARM64 geprüft.
+
 Damit prüft Docker beim Erstellen beziehungsweise `compose up` auf ein neues Image. Ein bloßer Neustart eines bestehenden Containers aktualisiert ihn nicht.
 
 ### Linux
@@ -206,7 +208,7 @@ Der Workflow `.github/workflows/container.yml` startet bei Programmänderungen a
 
 Images erhalten die Tags `latest`, die Versionsnummer aus `VERSION` und `sha-<commit>`. Vor einer neuen Version `VERSION`, die sichtbare Versionsangabe in den HTML-Dateien und den Versionshinweis dieser README gemeinsam aktualisieren.
 
-**Einmalig nach der ersten Veröffentlichung:** GitHub erstellt neue Container-Pakete standardmäßig privat. Unter [Paket-Einstellungen](https://github.com/users/Wolf6660/packages/container/artcaft-weblauncher/settings) die Sichtbarkeit auf **Public** setzen. Erst dann können Synology und andere Nutzer das Image ohne Registry-Anmeldung herunterladen. Der öffentliche Quellcode allein macht das Paket nicht automatisch öffentlich.
+**Für eigene Forks oder neue Paketnamen:** GitHub erstellt neue Container-Pakete standardmäßig privat. Das Paket `wolf6660/artcaft-weblauncher` ist bereits öffentlich; Nutzer dieses Images müssen nichts freigeben. Unter [Paket-Einstellungen](https://github.com/users/Wolf6660/packages/container/artcaft-weblauncher/settings) die Sichtbarkeit auf **Public** setzen. Bei einem noch privaten eigenen Paket können Synology und andere Nutzer erst danach das Image ohne Registry-Anmeldung herunterladen. Der öffentliche Quellcode allein macht das Paket nicht automatisch öffentlich.
 
 Für lokale Entwicklungsbuilds bleibt das Dockerfile erhalten:
 
