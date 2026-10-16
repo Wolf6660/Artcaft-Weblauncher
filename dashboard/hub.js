@@ -26,7 +26,7 @@ function row(app) {
     img.onload = () => icon.classList.add('loaded'); img.onerror = () => img.remove(); icon.append(img); img.src = app.icon;
   }
   const info = element('div', '', 'app-info');
-  const title = element('a', app.id, 'app-name'); title.href = '/details/'+encodeURIComponent(app.id); title.title = 'Beschreibung anzeigen';
+  const title = element('a', app.id, 'app-name'); title.href = 'https://github.com/storytold/'+encodeURIComponent(app.id)+'#readme'; title.target = '_blank'; title.rel = 'noopener noreferrer'; title.title = 'Beschreibung auf GitHub öffnen';
   info.append(title, element('p', app.description || 'Beschreibung auf GitHub ansehen.', 'description'));
   const version = app.installed ? 'Installiert: '+app.installed : (app.release ? 'Version '+app.release.tag : '');
   info.append(element('span', version, 'version'));
@@ -48,6 +48,7 @@ function row(app) {
 }
 function render() {
   $('#check').disabled = state.busy || pending;
+  if(state.version) document.querySelectorAll('[data-hub-version]').forEach(el=>el.textContent='Version '+state.version);
   $('#checked').textContent = state.checked ? 'Zuletzt geprüft: ' + new Date(state.checked*1000).toLocaleString('de-DE') : 'Noch keine Prüfung';
   const query = $('#search').value.toLowerCase();
   const apps = state.apps.filter(a => (a.id+' '+a.description).toLowerCase().includes(query));

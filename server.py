@@ -23,6 +23,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 DATA = Path(os.getenv('DATA_DIR', '/data'))
 PUBLIC = Path(os.getenv('PUBLIC_DIR', '/public'))
 DASHBOARD = Path(__file__).parent / 'dashboard'
+VERSION = (Path(__file__).parent / 'VERSION').read_text().strip()
 LOCK = threading.RLock()
 STATUS = {'busy': False, 'message': '', 'checked': None, 'apps': [], 'error': None}
 CSRF = secrets.token_urlsafe(32)
@@ -506,7 +507,7 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as error:
                 return self.respond(502, {'error': str(error)})
         if self.path == '/api/status':
-            return self.respond(200, {**STATUS, 'apps': catalog(), 'csrf': CSRF})
+            return self.respond(200, {**STATUS, 'apps': catalog(), 'csrf': CSRF, 'version': VERSION})
         return super().do_GET()
 
     def do_HEAD(self):

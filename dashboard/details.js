@@ -70,7 +70,7 @@ async function load() {
     $('#status').textContent=(data.cached?'Gespeicherte Informationen · ':'')+'Stand: '+new Date(data.fetched*1000).toLocaleString('de-DE');
     const source=add('a','Original auf GitHub ↗',$('#detail-actions')); source.className='back'; source.href='https://github.com/storytold/'+encodeURIComponent(name); source.target='_blank'; source.rel='noreferrer';
     const statusResponse=await fetch('/api/status');
-    if(statusResponse.ok) { const status=await statusResponse.json(); const app=status.apps.find(a=>a.id===name); if(app?.installed) { const start=add('a','Starten',$('#detail-actions')); start.className='start detail-start'; start.href='/'+encodeURIComponent(name)+'/'; start.target='_blank'; start.rel='noopener'; } }
+    if(statusResponse.ok) { const status=await statusResponse.json(); if(status.version) document.querySelectorAll('[data-hub-version]').forEach(el=>el.textContent='Version '+status.version); const app=status.apps.find(a=>a.id===name); if(app?.installed) { const start=add('a','Starten',$('#detail-actions')); start.className='start detail-start'; start.href='/'+encodeURIComponent(name)+'/'; start.target='_blank'; start.rel='noopener'; } }
   } catch(error) { $('#status').textContent=error.message; $('#status').className='error'; }
 }
 load();

@@ -1,6 +1,6 @@
 FROM python:3.13-alpine
 WORKDIR /app
-COPY server.py catalog-default.json /app/
+COPY server.py catalog-default.json VERSION /app/
 COPY dashboard /app/dashboard
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 EXPOSE 8080

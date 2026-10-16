@@ -1,5 +1,7 @@
 # Artcraft Hub für Docker
 
+**Aktuelle Version: [0.2](https://github.com/Wolf6660/Artcaft-Weblauncher/tree/v0.2)**
+
 Ein unabhängiger, selbst gehosteter Launcher für die [Craft-Webanwendungen von storytold](https://github.com/orgs/storytold/repositories?type=all). Anwendungen direkt im Browser starten, weitere Werkzeuge installieren und verfügbare Web-Releases bei Bedarf aktualisieren.
 
 Für **Synology NAS mit Container Manager** und **Linux-Server mit Docker Compose V2**. Kein GitHub-Konto für den normalen Betrieb erforderlich.
@@ -21,7 +23,9 @@ Für **Synology NAS mit Container Manager** und **Linux-Server mit Docker Compos
 
 - **Installiert:** Anwendungen mit grünem Startbutton und Dropdown für Update, vorherige Version und Deinstallation.
 - **Verfügbar:** noch nicht installierte Webanwendungen mit blauem Installationsbutton.
-- GitHub-Kurzbeschreibungen und lokale Detailseiten mit README-Inhalten.
+- GitHub-Kurzbeschreibungen; ein Klick auf den Anwendungsnamen öffnet die README im jeweiligen GitHub-Repository.
+- Oben rechts Links zum Weblauncher und zu den Repositories der Softwarehersteller.
+- Aktuelle Hub-Version unten rechts; Versionsstand in der Datei `VERSION`.
 - Originalicons werden vom Server geladen und unter `data/icons` zwischengespeichert.
 - Automatische Prüfung auf neue Releases alle zwölf Stunden; Installationen und Updates ausschließlich auf Klick.
 - Vorherige verwaltete Version bleibt für einen Rollback erhalten.
@@ -56,7 +60,7 @@ Die Volume-Pfade `./public` und `./data` beziehen sich auf das Projektverzeichni
 
 ## Installation auf Synology
 
-1. Die Projektdateien beispielsweise unter `/volume1/docker/artcraft` ablegen. `Dockerfile`, `compose.yaml`, `server.py`, `catalog-default.json` und der komplette Ordner `dashboard` müssen vorhanden sein.
+1. Die Projektdateien beispielsweise unter `/volume1/docker/artcraft` ablegen. `Dockerfile`, `compose.yaml`, `server.py`, `catalog-default.json`, `VERSION` und der komplette Ordner `dashboard` müssen vorhanden sein.
 2. Die Ordner `public` und `data` anlegen, falls sie fehlen. Bestehende Anwendungsordner und Daten behalten.
 3. `.env.example` als `.env` kopieren und bei Bedarf bearbeiten.
 4. Einen bisherigen Container mit gleichem Namen oder Port vor der Umstellung stoppen und entfernen. Die Datenordner behalten.
@@ -149,6 +153,7 @@ GITHUB_TOKEN=
 ├── compose.yaml
 ├── server.py
 ├── catalog-default.json
+├── VERSION
 ├── .env.example
 ├── dashboard/
 ├── public/                 # Manuell vorhandene Webanwendungen
@@ -177,15 +182,6 @@ docker compose up -d --build
 Das gilt nur für eine per Git geklonte Installation. Bei manuell kopierten Dateien diese zunächst ersetzen. Die Updatebuttons im Hub aktualisieren die Craft-Anwendungen, nicht das Docker-Image des Hubs.
 
 Für Backups den Container stoppen und `public`, `data` und `.env` sichern. Der Hub ist kein Dokumentenserver: Dokumente und Einstellungen innerhalb einer Craft-Anwendung werden von deren eigenen Browserfunktionen verwaltet.
-
-## Fehlerbehebung
-
-- **Keine verfügbaren Anwendungen:** prüfen, ob `catalog-default.json` mit dem aktuellen Dockerfile ins Image kopiert wurde. Fehlermeldung der Katalogprüfung beachten; gegebenenfalls API-Freigabe abwarten oder einen Token eintragen.
-- **Keine Icons:** `http://SERVER-IP:31000/api/icon/photocraft` aufrufen. Dieser Endpunkt zeigt das Bild oder einen konkreten Fehler. Es muss dafür kein Ordner `api/icon` angelegt werden. Der NAS-Container benötigt Zugriff auf `raw.githubusercontent.com`.
-- **Beschreibung nicht erreichbar:** der Container benötigt Zugriff auf `raw.githubusercontent.com`. Vorhandene gespeicherte Beschreibungen bleiben bei einem Fehler nutzbar.
-- **Alte Oberfläche oder HTML-404 am Icon-Endpunkt:** Projektdateien vollständig aktualisieren und mit `docker compose build --no-cache` sowie `docker compose up -d --force-recreate` neu bauen und erstellen. Danach Browserseite vollständig neu laden.
-- **Port schon belegt:** alten Container stoppen oder `ARTCRAFT_PORT` in `.env` ändern.
-- **Browserfunktionen fehlen:** WebGPU und bestimmte Browserfunktionen benötigen HTTPS oder localhost. Einen Reverse-Proxy mit gültigem Zertifikat vorschalten. Bei unverschlüsseltem HTTP wird auch Basic Auth unverschlüsselt übertragen.
 
 ## Grenzen und Prüfstand
 
