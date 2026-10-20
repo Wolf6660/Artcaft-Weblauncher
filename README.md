@@ -1,6 +1,6 @@
 # Artcraft Hub für Docker
 
-**Aktuelle Version: [0.3](https://github.com/Wolf6660/Artcaft-Weblauncher/tree/v0.3)**
+**Aktuelle Version: [0.4](https://github.com/Wolf6660/Artcaft-Weblauncher/tree/v0.4)**
 
 Ein unabhängiger, selbst gehosteter Launcher für die [Craft-Webanwendungen von storytold](https://github.com/orgs/storytold/repositories?type=all). Anwendungen direkt im Browser starten, weitere Werkzeuge installieren und verfügbare Web-Releases bei Bedarf aktualisieren.
 
@@ -28,6 +28,7 @@ Für **Synology NAS mit Container Manager** und **Linux-Server mit Docker Compos
 - Aktuelle Hub-Version unten rechts; Versionsstand in der Datei `VERSION`.
 - Originalicons werden vom Server geladen und unter `data/icons` zwischengespeichert.
 - Fertiges Container-Image aus GHCR für Intel/AMD64 und ARM64; keine lokalen Programmdateien für die Installation erforderlich.
+- „Alle Updates installieren“ neben der Update-Prüfung aktualisiert alle bereits installierten Anwendungen mit bekanntem Update nacheinander. Fortschritt und Fehler werden angezeigt; ein fehlgeschlagenes Update stoppt die übrigen nicht.
 - Automatische Prüfung auf neue Releases alle zwölf Stunden; Installationen und Updates ausschließlich auf Klick.
 - Vorherige verwaltete Version bleibt für einen Rollback erhalten.
 - Bestehende manuelle Anwendungen in `public` bleiben nutzbar.
@@ -190,7 +191,7 @@ docker compose up -d --force-recreate
 
 In Synology entspricht dies dem erneuten Erstellen des Projekts mit der neuen YAML und aktuellem Image. Weder `git pull` noch ein lokaler Build sind erforderlich. `public`, `data` und `.env` bleiben erhalten. Ein bereits laufender Container aktualisiert sich nicht von selbst; der Updatezeitpunkt bleibt unter deiner Kontrolle. Die Updatebuttons im Hub aktualisieren die Craft-Anwendungen, nicht das Hub-Image.
 
-Zum Festhalten einer bestimmten Version in der YAML statt `:latest` beispielsweise `:0.3` verwenden. Für ein Update auf eine andere festgelegte Version den Tag in der YAML ändern. Die laufende Version steht unten rechts oder lässt sich mit `docker exec artcraft cat /app/VERSION` prüfen.
+Zum Festhalten einer bestimmten Version in der YAML statt `:latest` beispielsweise `:0.4` verwenden. Für ein Update auf eine andere festgelegte Version den Tag in der YAML ändern. Die laufende Version steht unten rechts oder lässt sich mit `docker exec artcraft cat /app/VERSION` prüfen.
 
 Für Backups den Container stoppen und `public`, `data` und `.env` sichern. Der Hub ist kein Dokumentenserver: Dokumente und Einstellungen innerhalb einer Craft-Anwendung werden von deren eigenen Browserfunktionen verwaltet.
 

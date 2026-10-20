@@ -421,6 +421,24 @@ def uninstall(name):
     return f'{name} deinstalliert.'
 
 
+def update_all():
+    updates = [app for app in catalog() if app.get('installed') and app.get('update') and app.get('release')]
+    if not updates:
+        return 'Keine Updates für installierte Anwendungen verfügbar.'
+    successful, failed = [], []
+    for number, app in enumerate(updates, 1):
+        STATUS['message'] = f'Update {number}/{len(updates)}: {app["id"]} wird aktualisiert …'
+        try:
+            install(app['id'])
+            successful.append(app['id'])
+        except Exception as error:
+            failed.append(f'{app["id"]}: {error}')
+    summary = f'{len(successful)} von {len(updates)} Anwendungen erfolgreich aktualisiert.'
+    if failed:
+        raise RuntimeError(summary + ' Fehlgeschlagen: ' + '; '.join(failed))
+    return summary
+
+
 def start_job(action, name):
     with LOCK:
         if STATUS['busy']:
@@ -428,7 +446,7 @@ def start_job(action, name):
         STATUS.update(busy=True, error=None, message='Bitte warten …')
     def work():
         try:
-            STATUS['message'] = {'check': check, 'install': lambda: install(name), 'rollback': lambda: rollback(name), 'uninstall': lambda: uninstall(name)}[action]()
+            STATUS['message'] = {'check': check, 'update_all': update_all, 'install': lambda: install(name), 'rollback': lambda: rollback(name), 'uninstall': lambda: uninstall(name)}[action]()
         except Exception as error:
             STATUS.update(error=str(error), message='Vorgang fehlgeschlagen')
         finally:
@@ -527,7 +545,7 @@ class Handler(SimpleHTTPRequestHandler):
                 raise ValueError('Ungültige Anfrage')
             data = json.loads(self.rfile.read(length))
             action, name = data.get('action'), data.get('id', '')
-            if action not in {'check', 'install', 'rollback', 'uninstall'} or (action != 'check' and not valid_name(name)):
+            if action not in {'check', 'update_all', 'install', 'rollback', 'uninstall'} or (action not in {'check', 'update_all'} and not valid_name(name)):
                 raise ValueError('Ungültige Aktion')
             accepted = start_job(action, name)
             self.respond(202 if accepted else 409, {'accepted': accepted})

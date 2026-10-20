@@ -48,6 +48,10 @@ function row(app) {
 }
 function render() {
   $('#check').disabled = state.busy || pending;
+  const updateCount = state.apps.filter(app=>app.installed && app.update && app.release).length;
+  $('#update-all').disabled = state.busy || pending || !updateCount;
+  $('#update-all').textContent = 'Alle Updates installieren'+(updateCount ? ' ('+updateCount+')' : '');
+  $('#update-all').title = updateCount ? 'Alle verfügbaren Updates für installierte Anwendungen installieren' : 'Keine Updates für installierte Anwendungen verfügbar';
   if(state.version) document.querySelectorAll('[data-hub-version]').forEach(el=>el.textContent='Version '+state.version);
   $('#checked').textContent = state.checked ? 'Zuletzt geprüft: ' + new Date(state.checked*1000).toLocaleString('de-DE') : 'Noch keine Prüfung';
   const query = $('#search').value.toLowerCase();
@@ -66,10 +70,10 @@ function render() {
   }
 }
 async function refresh() {
-  try { const r=await fetch('/api/status'); if(!r.ok) throw Error('Status konnte nicht geladen werden ('+r.status+').'); state=await r.json(); $('#status').textContent=state.error || (state.busy?'Vorgang läuft …':state.message); $('#status').className=state.error?'error':''; render(); }
+  try { const r=await fetch('/api/status'); if(!r.ok) throw Error('Status konnte nicht geladen werden ('+r.status+').'); state=await r.json(); $('#status').textContent=state.error || (state.message || (state.busy?'Vorgang läuft …':'')); $('#status').className=state.error?'error':''; render(); }
   catch(e) { $('#status').textContent=e.message; }
 }
-$('#check').onclick=()=>action('check',''); $('#search').oninput=render;
+$('#check').onclick=()=>action('check',''); $('#update-all').onclick=()=>action('update_all',''); $('#search').oninput=render;
 document.addEventListener('click',event=>{ if(!event.target.closest('.dropdown')) document.querySelectorAll('.dropdown[open]').forEach(menu=>menu.open=false); });
 document.addEventListener('keydown',event=>{ if(event.key==='Escape') document.querySelectorAll('.dropdown[open]').forEach(menu=>{ menu.open=false; menu.querySelector('summary').focus(); }); });
 refresh(); setInterval(refresh,2500);
