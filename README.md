@@ -2,6 +2,17 @@
 
 **Aktuelle Version: [0.5](https://github.com/Wolf6660/Artcaft-Weblauncher/tree/v0.5)**
 
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="1.png"><img src="1.png" alt="Installierte Anwendungen im Artcraft Weblauncher" width="100%"></a>
+    </td>
+    <td width="50%" valign="top">
+      <a href="2.png"><img src="2.png" alt="Verfügbare Anwendungen im Artcraft Weblauncher" width="100%"></a>
+    </td>
+  </tr>
+</table>
+
 Weblauncher für die [Craft-Anwendungen von storytold](https://github.com/orgs/storytold/repositories?type=all) und [SolidCraft](https://github.com/tangency-labs/solidcraft). Anwendungen im Browser installieren, starten und einzeln oder gemeinsam aktualisieren. Für Synology Container Manager und Linux mit Docker Compose V2, auf AMD64 und ARM64.
 
 Unabhängiges Projekt; kein offizielles Produkt der Softwarehersteller.
