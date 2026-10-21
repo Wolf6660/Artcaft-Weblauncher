@@ -30,6 +30,12 @@ CSRF = secrets.token_urlsafe(32)
 LIMIT = 512 * 1024 * 1024
 ICON_SCHEMA = 4
 ICON_LOCKS = {}
+EXTRA_REPOSITORIES = {
+    'solidcraft': {
+        'repository': 'tangency-labs/solidcraft',
+        'icon_path': 'assets/icons/app/linux/exports/hicolor/64x64/apps/ai.storyteller.solidcraft.png',
+    },
+}
 
 
 def atomic_json(path, value):
@@ -128,14 +134,23 @@ def hidden_manual():
     return set(json.loads(path.read_text())) if path.exists() else set()
 
 
+def source_repository(app):
+    name = app.get('name') or app.get('id')
+    source = (EXTRA_REPOSITORIES.get(name, {}).get('repository')
+              or app.get('repository') or app.get('full_name') or f'storytold/{name}')
+    parts = source.split('/')
+    if len(parts) != 2 or not all(valid_name(part) for part in parts):
+        raise ValueError('Ungültiges GitHub-Repository')
+    return source
+
+
 def discover_icon(repo):
-    """The Craft apps publish their icons at this shared path; no API call needed."""
-    name = repo['name']
-    branch = repo.get('default_branch') or 'main'
-    return ('https://raw.githubusercontent.com/storytold/' + urllib.parse.quote(name, safe='')
-            + '/' + urllib.parse.quote(branch, safe='')
-            + '/assets/app-icon/hicolor/64x64/apps/ai.storyteller.'
-            + urllib.parse.quote(name.lower(), safe='') + '.png')
+    name = repo.get('name') or repo['id']
+    branch = repo.get('default_branch') or repo.get('icon_branch') or 'main'
+    icon_path = (EXTRA_REPOSITORIES.get(name, {}).get('icon_path') or repo.get('icon_path')
+                 or f'assets/app-icon/hicolor/64x64/apps/ai.storyteller.{name.lower()}.png')
+    return ('https://raw.githubusercontent.com/' + source_repository(repo)
+            + '/' + urllib.parse.quote(branch, safe='') + '/' + urllib.parse.quote(icon_path))
 
 
 def default_apps():
@@ -144,7 +159,8 @@ def default_apps():
 
 
 def catalog():
-    items = {a['id']: dict(a) for a in (STATUS['apps'] or default_apps())}
+    items = {a['id']: dict(a) for a in default_apps() if a['id'] in EXTRA_REPOSITORIES}
+    items.update({a['id']: dict(a) for a in (STATUS['apps'] or default_apps())})
     hidden = hidden_manual()
     roots = [PUBLIC, DATA / 'apps']
     for root in roots:
@@ -157,7 +173,8 @@ def catalog():
         item['installed'] = m.get('tag') or ('Manuell' if (PUBLIC / name / 'index.html').is_file() and name not in hidden else None)
         item['update'] = bool(item.get('release') and item['installed'] != item['release']['tag'])
         item['rollback'] = bool(m.get('previous'))
-        item.setdefault('github', f'https://github.com/storytold/{name}#readme')
+        item['repository'] = source_repository(item)
+        item['github'] = f'https://github.com/{item["repository"]}#readme'
         item['icon'] = '/api/icon/' + urllib.parse.quote(name, safe='')
     return sorted(items.values(), key=lambda a: a['id'].lower())
 
@@ -181,7 +198,7 @@ def load_icon(name):
             if image.exists():
                 return image.read_bytes()
             raise RuntimeError('Icon derzeit nicht erreichbar; erneuter Versuch in wenigen Minuten.')
-        url = discover_icon({'name': name, 'default_branch': app.get('icon_branch', 'main')})
+        url = discover_icon({**app, 'name': name, 'default_branch': app.get('icon_branch', 'main')})
         try:
             # The server fetches the image. Browsers only contact their local Hub.
             with request(url) as response:
@@ -249,6 +266,13 @@ def check():
         repositories.extend(batch)
         if len(batch) < 100:
             break
+    seeds = {a['id']: a for a in default_apps()}
+    for name, extra in EXTRA_REPOSITORIES.items():
+        seed = seeds.get(name, {})
+        repositories.append({**extra, 'name': name, 'full_name': extra['repository'],
+                             'default_branch': seed.get('icon_branch', 'main'),
+                             'html_url': 'https://github.com/' + extra['repository'],
+                             'description': seed.get('description', '')})
     failures = []
     previous = {a['id']: a for a in catalog()}
     items = dict(previous)
@@ -257,13 +281,13 @@ def check():
         if not name.lower().endswith('craft') or not valid_name(name) or repo.get('archived'):
             continue
         try:
-            release = get_json(f'https://api.github.com/repos/storytold/{name}/releases/latest')
+            release = get_json(f'https://api.github.com/repos/{source_repository(repo)}/releases/latest')
             asset = select_asset(release)
             if asset:
                 old = previous.get(name, {})
                 icon = old.get('icon')
                 icon_revision = old.get('icon_revision')
-                items[name] = {'id': name, 'github': repo['html_url'] + '#readme', 'icon': icon, 'icon_revision': icon_revision, 'icon_schema': old.get('icon_schema'), 'description': repo.get('description') or '', 'release': {'tag': release['tag_name'], 'url': asset['browser_download_url'], 'digest': asset.get('digest'), 'size': asset['size'], 'page': release['html_url']}}
+                items[name] = {'id': name, 'repository': source_repository(repo), 'icon_path': repo.get('icon_path'), 'github': repo['html_url'] + '#readme', 'icon': icon, 'icon_revision': icon_revision, 'icon_schema': old.get('icon_schema'), 'description': repo.get('description') or '', 'release': {'tag': release['tag_name'], 'url': asset['browser_download_url'], 'digest': asset.get('digest'), 'size': asset['size'], 'page': release['html_url']}}
             else:
                 items.pop(name, None)
         except GitHubPaused as error:
@@ -279,7 +303,7 @@ def check():
     apps = list(items.values())
     repos_by_name = {r['name']: r for r in repositories}
     for app in apps:
-        repo = repos_by_name.get(app['id'], {'name': app['id'], 'default_branch': app.get('icon_branch', 'main')})
+        repo = repos_by_name.get(app['id'], {**app, 'name': app['id'], 'default_branch': app.get('icon_branch', 'main')})
         app['icon'] = discover_icon(repo)
         app['icon_branch'] = repo.get('default_branch') or 'main'
         app['icon_revision'] = repo.get('pushed_at')
@@ -303,13 +327,13 @@ def app_details(name):
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache = cache_dir / (name + '.json')
     previous = json.loads(cache.read_text()) if cache.exists() else None
-    context = {'branch': app.get('icon_branch') or 'main'}
+    context = {'branch': app.get('icon_branch') or 'main', 'repository': source_repository(app)}
     if previous and time.time() - previous['fetched'] < 3600:
         return {**previous, **context}
     try:
         readme_path = 'README.md'
         branch = urllib.parse.quote(app.get('icon_branch') or 'main', safe='')
-        url = f'https://raw.githubusercontent.com/storytold/{name}/{branch}/README.md'
+        url = f'https://raw.githubusercontent.com/{context["repository"]}/{branch}/README.md'
         try:
             with request(url) as response:
                 raw = response.read(2 * 1024 * 1024 + 1)
@@ -320,13 +344,13 @@ def app_details(name):
             if error.code != 404:
                 raise
             # Unusual README names are resolved through the API only when needed.
-            readme = get_json(f'https://api.github.com/repos/storytold/{name}/readme')
+            readme = get_json(f'https://api.github.com/repos/{context["repository"]}/readme')
             if readme.get('encoding') != 'base64':
                 raise ValueError('Unbekanntes README-Format')
             content = base64.b64decode(readme['content']).decode('utf-8', errors='replace')
             readme_path = readme.get('path') or 'README.md'
         result = {'id': name, 'description': app.get('description') or '',
-                  'readme': content, 'readme_path': readme_path, **context, 'github': f'https://github.com/storytold/{name}',
+                  'readme': content, 'readme_path': readme_path, **context, 'github': f'https://github.com/{context["repository"]}',
                   'fetched': time.time(), 'cached': False}
         atomic_json(cache, result)
         return result

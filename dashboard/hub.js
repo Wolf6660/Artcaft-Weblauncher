@@ -26,7 +26,7 @@ function row(app) {
     img.onload = () => icon.classList.add('loaded'); img.onerror = () => img.remove(); icon.append(img); img.src = app.icon;
   }
   const info = element('div', '', 'app-info');
-  const title = element('a', app.id, 'app-name'); title.href = 'https://github.com/storytold/'+encodeURIComponent(app.id)+'#readme'; title.target = '_blank'; title.rel = 'noopener noreferrer'; title.title = 'Beschreibung auf GitHub öffnen';
+  const title = element('a', app.id, 'app-name'); title.href = app.github || 'https://github.com/storytold/'+encodeURIComponent(app.id)+'#readme'; title.target = '_blank'; title.rel = 'noopener noreferrer'; title.title = 'Beschreibung auf GitHub öffnen';
   info.append(title, element('p', app.description || 'Beschreibung auf GitHub ansehen.', 'description'));
   const version = app.installed ? 'Installiert: '+app.installed : (app.release ? 'Version '+app.release.tag : '');
   info.append(element('span', version, 'version'));

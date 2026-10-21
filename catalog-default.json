@@ -168,6 +168,21 @@
         "size": 8892594,
         "page": "https://github.com/storytold/figcraft/releases/tag/v0.6.0"
       }
+    },
+    {
+      "id": "solidcraft",
+      "repository": "tangency-labs/solidcraft",
+      "icon_path": "assets/icons/app/linux/exports/hicolor/64x64/apps/ai.storyteller.solidcraft.png",
+      "description": "SolidCraft: an open-source parametric 3D CAD application built in pure Rust. Desktop, web, and automation through MCP.",
+      "github": "https://github.com/tangency-labs/solidcraft#readme",
+      "icon_branch": "main",
+      "release": {
+        "tag": "v0.17.0",
+        "url": "https://github.com/tangency-labs/solidcraft/releases/download/v0.17.0/solidcraft-web-0.17.0.zip",
+        "digest": "sha256:112a2a810f3266ebcca1d8e439dc6fae8f645066182bba094dec30cef2451811",
+        "size": 19584532,
+        "page": "https://github.com/tangency-labs/solidcraft/releases/tag/v0.17.0"
+      }
     }
   ],
   "generated": 1792045533.749343

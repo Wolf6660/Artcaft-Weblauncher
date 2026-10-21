@@ -1,8 +1,8 @@
 # Artcraft Hub für Docker
 
-**Aktuelle Version: [0.4](https://github.com/Wolf6660/Artcaft-Weblauncher/tree/v0.4)**
+**Aktuelle Version: [0.5](https://github.com/Wolf6660/Artcaft-Weblauncher/tree/v0.5)**
 
-Ein unabhängiger, selbst gehosteter Launcher für die [Craft-Webanwendungen von storytold](https://github.com/orgs/storytold/repositories?type=all). Anwendungen direkt im Browser starten, weitere Werkzeuge installieren und verfügbare Web-Releases bei Bedarf aktualisieren.
+Ein unabhängiger, selbst gehosteter Launcher für die [Craft-Webanwendungen von storytold](https://github.com/orgs/storytold/repositories?type=all) und [SolidCraft von tangency-labs](https://github.com/tangency-labs/solidcraft). Anwendungen direkt im Browser starten, weitere Werkzeuge installieren und verfügbare Web-Releases bei Bedarf aktualisieren.
 
 Für **Synology NAS mit Container Manager** und **Linux-Server mit Docker Compose V2**. Kein GitHub-Konto für den normalen Betrieb erforderlich.
 
@@ -32,7 +32,11 @@ Für **Synology NAS mit Container Manager** und **Linux-Server mit Docker Compos
 - Automatische Prüfung auf neue Releases alle zwölf Stunden; Installationen und Updates ausschließlich auf Klick.
 - Vorherige verwaltete Version bleibt für einen Rollback erhalten.
 - Bestehende manuelle Anwendungen in `public` bleiben nutzbar.
-- Mitgelieferter Startkatalog mit 13 zum Erstellungszeitpunkt geprüften Web-Releases. Dadurch bleibt die Anwendungsauswahl auch ohne erfolgreichen ersten API-Abruf sichtbar.
+- Mitgelieferter Startkatalog mit 14 zum Erstellungszeitpunkt geprüften Web-Releases. Dadurch bleibt die Anwendungsauswahl auch ohne erfolgreichen ersten API-Abruf sichtbar.
+
+## SolidCraft
+
+[SolidCraft](https://github.com/tangency-labs/solidcraft) ist ein parametrisches 3D-CAD-Programm von tangency-labs. Die Web-Version `v0.17.0` ist im Startkatalog enthalten und lässt sich wie die anderen Anwendungen installieren und unter `/solidcraft/` starten. Die Update-Prüfung fragt das neueste stabile Release von `tangency-labs/solidcraft` ab. GitHub-Link, README und Originalicon werden aus diesem Repository geladen. Sammelupdates, Rollback und Deinstallation funktionieren wie bei den übrigen Anwendungen.
 
 ## Voraussetzungen
 
@@ -191,13 +195,13 @@ docker compose up -d --force-recreate
 
 In Synology entspricht dies dem erneuten Erstellen des Projekts mit der neuen YAML und aktuellem Image. Weder `git pull` noch ein lokaler Build sind erforderlich. `public`, `data` und `.env` bleiben erhalten. Ein bereits laufender Container aktualisiert sich nicht von selbst; der Updatezeitpunkt bleibt unter deiner Kontrolle. Die Updatebuttons im Hub aktualisieren die Craft-Anwendungen, nicht das Hub-Image.
 
-Zum Festhalten einer bestimmten Version in der YAML statt `:latest` beispielsweise `:0.4` verwenden. Für ein Update auf eine andere festgelegte Version den Tag in der YAML ändern. Die laufende Version steht unten rechts oder lässt sich mit `docker exec artcraft cat /app/VERSION` prüfen.
+Zum Festhalten einer bestimmten Version in der YAML statt `:latest` beispielsweise `:0.5` verwenden. Für ein Update auf eine andere festgelegte Version den Tag in der YAML ändern. Die laufende Version steht unten rechts oder lässt sich mit `docker exec artcraft cat /app/VERSION` prüfen.
 
 Für Backups den Container stoppen und `public`, `data` und `.env` sichern. Der Hub ist kein Dokumentenserver: Dokumente und Einstellungen innerhalb einer Craft-Anwendung werden von deren eigenen Browserfunktionen verwaltet.
 
 ## Grenzen und Prüfstand
 
-Die automatische Erkennung unterstützt Repositories mit `craft` am Namensende und einem eindeutigen fertigen Web-ZIP im neuesten stabilen GitHub-Release. Desktoppakete, eigene Rust-Builds und GitHub-Prereleases werden nicht automatisch installiert. Der mitgelieferte Katalog ist eine Momentaufnahme; neue Releases werden durch die Online-Prüfung erkannt.
+Zusätzlich zum explizit eingebundenen `tangency-labs/solidcraft` unterstützt die automatische Erkennung in der storytold-Organisation Repositories mit `craft` am Namensende und einem eindeutigen fertigen Web-ZIP im neuesten stabilen GitHub-Release. Desktoppakete, eigene Rust-Builds und GitHub-Prereleases werden nicht automatisch installiert. Der mitgelieferte Katalog ist eine Momentaufnahme; neue Releases werden durch die Online-Prüfung erkannt.
 
 README-Inhalte werden mit GitHub-kompatibler Markdown-Darstellung und gefiltertem HTML angezeigt, einschließlich Bildern, Badges, Tabellen und Bildgalerien. Relative Bild- und Linkpfade werden zum jeweiligen Repository aufgelöst. Skripte, Ereignishandler, eingebettete Frames und aktive HTML-Inhalte werden entfernt. Bilder von GitHub-Raw-Hosting und Shields.io werden über den Hub zwischengespeichert und lokal ausgeliefert; SVG-Bilder erhalten eine restriktive Content-Security-Policy. Andere Bildhosts werden derzeit nicht unterstützt. Die lokal mitgelieferten Bibliotheken [Marked](https://marked.js.org/) und [DOMPurify](https://github.com/cure53/DOMPurify) sowie ihre Lizenzen liegen unter `dashboard/vendor`; ein Browser-CDN wird nicht benötigt. Ein Container-Docker-Socket ist nicht erforderlich.
 
